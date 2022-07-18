@@ -170,11 +170,11 @@ int main(int argc, char** argv)
     visit_computational_layers(freshnet.subnet().subnet(), visitor_weight_decay_multiplier(0));
     set_all_learning_rate_multipliers(freshnet.subnet().subnet(), 0);
 
-    visit_computational_layers_range<0, 2>(freshnet, visitor_weight_decay_multiplier(0.5));
-    set_learning_rate_multipliers_range<  0,   2>(freshnet, 0.5);
+    // visit_computational_layers_range<0, 2>(freshnet, visitor_weight_decay_multiplier(0.5));
+    // set_learning_rate_multipliers_range<  0,   2>(freshnet, 0.5);
 
-    visit_computational_layers_range<2, 10>(freshnet, visitor_weight_decay_multiplier(0.1));
-    set_learning_rate_multipliers_range<  2,   10>(freshnet, 0.1);
+    // visit_computational_layers_range<2, 10>(freshnet, visitor_weight_decay_multiplier(0.1));
+    // set_learning_rate_multipliers_range<  2,   10>(freshnet, 0.1);
     cout << freshnet;
         // Now let's print the details of the pnet to the screen and inspect it.
     // cout << "The anet has " << dlibnet.num_layers << " layers in it." << endl;
