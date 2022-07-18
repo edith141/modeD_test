@@ -237,6 +237,8 @@ int main(int argc, char** argv)
 
     // cout << "The fresh net now has " << freshnet.num_layers << " layers in it." << endl;
     // cout << freshnet << endl;
+    freshnet.clean();
+    serialize("dlib_frozen.dat") << freshnet;
 }
 
 
