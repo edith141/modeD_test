@@ -148,19 +148,34 @@ int main(int argc, char** argv)
     // this to something like 10000 so training doesn't terminate too early.
     trainer.set_iterations_without_progress_threshold(300);
 
-    visit_computational_layers(freshnet, visitor_weight_decay_multiplier(0.00));
+    // visit_computational_layers(freshnet, visitor_weight_decay_multiplier(0.00));
 
     // We can also use predefined visitors to affect the learning rate of the whole
     // network.
-    set_all_learning_rate_multipliers(freshnet, 0.0);
+    // set_all_learning_rate_multipliers(freshnet, 0.0);
+     visit_computational_layers(freshnet, visitor_weight_decay_multiplier(0.00));
 
+    // // We can also use predefined visitors to affect the learning rate of the whole
+    // // network.
+    set_all_learning_rate_multipliers(freshnet, 0.0);
     cout << "the freshnet: " << freshnet;
 
-    layer<10>(freshnet) = layer<10>(dlibnet);
+    freshnet = dlibnet;
     cout << endl << endl << endl;
     cout << "after transfer: " <<endl;
     cout << freshnet;
 
+    cout << "freezing layers" << endl << endl;
+    // Usually, we want to freeze the network, except for the top layers:
+    visit_computational_layers(freshnet.subnet().subnet(), visitor_weight_decay_multiplier(0));
+    set_all_learning_rate_multipliers(freshnet.subnet().subnet(), 0);
+
+    visit_computational_layers_range<0, 2>(freshnet, visitor_weight_decay_multiplier(0.5));
+    set_learning_rate_multipliers_range<  0,   2>(freshnet, 0.5);
+
+    visit_computational_layers_range<2, 10>(freshnet, visitor_weight_decay_multiplier(0.1));
+    set_learning_rate_multipliers_range<  2,   10>(freshnet, 0.1);
+    cout << freshnet;
         // Now let's print the details of the pnet to the screen and inspect it.
     // cout << "The anet has " << dlibnet.num_layers << " layers in it." << endl;
     // cout << dlibnet << endl;
