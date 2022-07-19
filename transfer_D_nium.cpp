@@ -88,7 +88,7 @@ void load_mini_batch (
     const std::vector<std::vector<string>>& objs,
     std::vector<matrix<rgb_pixel>>& images,
     std::vector<unsigned long>& labels
-)
+) 
 {
     images.clear();
     labels.clear();
@@ -190,7 +190,7 @@ using anet_type = loss_metric<fc_no_bias<128,avg_pool_everything<
                             alevel3<
                             alevel4<
                             max_pool<3,3,2,2,relu<affine<con<32,7,7,2,2,
-                            input_rgb_image
+                            input_rgb_image_sized<150>
                             >>>>>>>>>>>>;
 
 // ----------------------------------------------------------------------------------------
@@ -217,17 +217,18 @@ int main(int argc, char** argv)
 
     // net_type net;
     anet_type dlibnet;
-    deserialize("dlib_face_recognition_resnet_model_v1.dat") >> dlibnet;
+    deserialize("dlib_frozen.dat") >> dlibnet;
     // net.subnet().subnet() = dlibnet.subnet().subnet();
 
     dnn_trainer<anet_type> trainer(dlibnet, sgd(0.0001, 0.9));
     trainer.set_learning_rate(0.001);
     trainer.be_verbose();
-    trainer.set_synchronization_file("face_metric_sync_trans_nium", std::chrono::minutes(5));
+    trainer.set_synchronization_file("face_metric_sync_trans_nium_frozen_pfast2500", std::chrono::minutes(5));
     // I've set this to something really small to make the example terminate
     // sooner.  But when you really want to train a good model you should set
     // this to something like 10000 so training doesn't terminate too early.
-    trainer.set_iterations_without_progress_threshold(300);
+    trainer.set_iterations_without_progress_threshold(2500);
+    cout << dlibnet;
 
     // If you have a lot of data then it might not be reasonable to load it all
     // into RAM.  So you will need to be sure you are decompressing your images
@@ -282,7 +283,7 @@ int main(int argc, char** argv)
 
     // Save the network to disk
     dlibnet.clean();
-    serialize("metric_network_renset_Dtrans_nium.dat") << dlibnet;
+    serialize("metric_network_renset_Dtrans_nium_frozen_pfast2500.dat") << dlibnet;
 
     // stop all the data loading threads and wait for them to terminate.
     qimages.disable();
