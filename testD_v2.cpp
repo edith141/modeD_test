@@ -197,13 +197,16 @@ using anet_type = loss_metric<fc_no_bias<128,avg_pool_everything<
 
 int main(int argc, char** argv)
 {
-    if (argc != 2)
+    if (argc != 3)
     {
         cout << "Give a folder as input.  It should contain sub-folders of images and we will " << endl;
-        cout << "learn to distinguish between these sub-folders with metric learning.  " << endl;
+        cout << "test the images for similarity/recognition.  " << endl;
         cout << "For example, you can run this program on the very small examples/johns dataset" << endl;
         cout << "that comes with dlib by running this command:" << endl;
-        cout << "   ./dnn_metric_learning_on_images_ex johns" << endl;
+        cout << "Give the name of the model file to run the test with as the second argument." << endl;
+        cout << "Run the program with a command like this:" << endl;
+
+        cout << "   ./testModel.out folder_with_images model_name.dat" << endl;
         return 1;
     }
 
@@ -214,10 +217,10 @@ int main(int argc, char** argv)
     std::vector<matrix<rgb_pixel>> images;
     std::vector<unsigned long> labels;
 
-
+    auto model_name = argv[2];
     // net_type net;
     anet_type dlibnet;
-    deserialize("modelD_trans.dat") >> dlibnet;
+    deserialize("model_name") >> dlibnet;
     // net.subnet().subnet() = dlibnet.subnet().subnet();
 
     // dnn_trainer<anet_type> trainer(dlibnet, sgd(0.0001, 0.9));
