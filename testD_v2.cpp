@@ -220,7 +220,7 @@ int main(int argc, char** argv)
     auto model_name = argv[2];
     // net_type net;
     anet_type dlibnet;
-    deserialize("model_name") >> dlibnet;
+    deserialize(model_name) >> dlibnet;
     // net.subnet().subnet() = dlibnet.subnet().subnet();
 
     // dnn_trainer<anet_type> trainer(dlibnet, sgd(0.0001, 0.9));
@@ -306,7 +306,7 @@ int main(int argc, char** argv)
     // Now, just to show an example of how you would use the network, let's check how well
     // it performs on the training data.
     dlib::rand rnd(time(0));
-    load_mini_batch(10, 10, rnd, objs, images, labels);
+    load_mini_batch(10, 5, rnd, objs, images, labels);
 
     // Normally you would use the non-batch-normalized version of the network to do
     // testing, which is what we do here.
@@ -328,14 +328,14 @@ int main(int argc, char** argv)
                 // The loss_metric layer will cause images with the same label to be less
                 // than net.loss_details().get_distance_threshold() distance from each
                 // other.  So we can use that distance value as our testing threshold.
-                if (length(embedded[i]-embedded[j]) < 0.6)
+                if (length(embedded[i]-embedded[j]) < 0.4)
                     ++num_right;
                 else
                     ++num_wrong;
             }
             else
             {
-                if (length(embedded[i]-embedded[j]) >= 0.6)
+                if (length(embedded[i]-embedded[j]) >= 0.4)
                     ++num_right;
                 else
                     ++num_wrong;

@@ -217,13 +217,13 @@ int main(int argc, char** argv)
 
     // net_type net;
     anet_type dlibnet;
-    deserialize("dlib_frozen.dat") >> dlibnet;
+    deserialize("dlib_frozen_convo_bias.dat") >> dlibnet;
     // net.subnet().subnet() = dlibnet.subnet().subnet();
 
     dnn_trainer<anet_type> trainer(dlibnet, sgd(0.0001, 0.9));
     trainer.set_learning_rate(0.001);
     trainer.be_verbose();
-    trainer.set_synchronization_file("face_metric_sync_trans_nium_frozen_pfast2500", std::chrono::minutes(5));
+    trainer.set_synchronization_file("face_metric_sync_trans_nium_frozen_convo_bias_pfast2500", std::chrono::minutes(5));
     // I've set this to something really small to make the example terminate
     // sooner.  But when you really want to train a good model you should set
     // this to something like 10000 so training doesn't terminate too early.
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
 
     // Save the network to disk
     dlibnet.clean();
-    serialize("metric_network_renset_Dtrans_nium_frozen_pfast2500.dat") << dlibnet;
+    serialize("metric_network_renset_Dtrans_nium_frozen_convo_bias_pfast2500.dat") << dlibnet;
 
     // stop all the data loading threads and wait for them to terminate.
     qimages.disable();
