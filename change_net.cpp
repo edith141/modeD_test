@@ -187,12 +187,25 @@ int main(int argc, char** argv)
     // Usually, we want to freeze the network, except for the top layers:
     visit_computational_layers(freshnet.subnet().subnet(), visitor_weight_decay_multiplier(0));
     set_all_learning_rate_multipliers(freshnet.subnet().subnet(), 0);
-    visit_computational_layers(freshnet.subnet().subnet().subnet(), visitor_bias_decay_multiplier(0.1));
-    visit_computational_layers(layer<10>(freshnet), visitor_bias_decay_multiplier(0));
-    set_learning_rate_multipliers_range<  0,   2>(freshnet, 1);
-    set_learning_rate_multipliers_range<  2,   10>(freshnet, 0.1);
+    // visit_computational_layers(freshnet.subnet().subnet().subnet(), visitor_bias_decay_multiplier(0.1));
+    // visit_computational_layers(layer<10>(freshnet), visitor_bias_decay_multiplier(0));
+    // set_learning_rate_multipliers_range<  0,   2>(freshnet, 1);
+    // set_learning_rate_multipliers_range<  2,   10>(freshnet, 0.1);
     // visit_computational_layers(freshnet.subnet().subnet(), visitor_bias_decay_multiplier(0));
-    // layer<9>(dlibnet).layer_details().set_learning_rate_multiplier(0.1);
+    layer<9>(freshnet).layer_details().set_learning_rate_multiplier(0.1);
+    layer<9>(freshnet).layer_details().set_weight_decay_multiplier(0.1);
+    layer<9>(freshnet).layer_details().set_bias_learning_rate_multiplier(0.1);
+
+    layer<12>(freshnet).layer_details().set_learning_rate_multiplier(0.01);
+    layer<12>(freshnet).layer_details().set_weight_decay_multiplier(0.01);
+    layer<12>(freshnet).layer_details().set_bias_learning_rate_multiplier(0.01);
+    
+
+ 
+    
+
+
+
 
     // visit_computational_layers_range<0, 2>(freshnet, visitor_weight_decay_multiplier(0.5));
     // set_learning_rate_multipliers_range<  0,   2>(freshnet, 0.5);
@@ -262,7 +275,7 @@ int main(int argc, char** argv)
     // cout << "The fresh net now has " << freshnet.num_layers << " layers in it." << endl;
     // cout << freshnet << endl;
     freshnet.clean();
-    serialize("dlib_frozen_convo_bias.dat") << freshnet;
+    serialize("dlib_frozen_fcb_v3.1.dat") << freshnet;
 }
 
 
