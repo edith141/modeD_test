@@ -1,6 +1,7 @@
 #include <dlib/dnn.h>
 #include <dlib/string.h>
 #include <dlib/image_io.h>
+#include <dlib/image_processing/frontal_face_detector.h>
 #include <fstream>
 #include <string>
 
@@ -92,16 +93,24 @@ int main(int argc, char** argv) try
 {
     if (argc == 1)
     {
-        std::cout << "Provide a test data directory path to this program as cmd line input " << std::endl;
+        std::cout << "Provide a test data directory path, and the modelname to this program as cmd line input " << std::endl;
         return 1;
     }
+
+    //Intializing face detector
+    frontal_face_detector detector = get_frontal_face_detector();
+    // We will also use a face landmarking model to align faces to a standard pose:  (see face_landmark_detection_ex.cpp for an introduction)
+    shape_predictor sp;
+    deserialize("shape_predictor_5_face_landmarks.dat") >> sp;
 
 
     // Initializing the network with previously trained model
     anet_type net;
-    deserialize("metric_network_renset_Dtrans_nium_frozen_p_fast6000.dat") >> net;
+    auto model_name = argv[2];
+    deserialize(model_name) >> net;
 
     // Registering each person described as subdirectory
+    std::vector<matrix<rgb_pixel>> faces;
     for (auto subdir : directory(argv[1]).get_dirs())
     {
         std::cout<<"\nRegistering "<<getFileName(subdir)<<" ... "<<std::endl;
@@ -109,10 +118,23 @@ int main(int argc, char** argv) try
         // Getting the required fingerprint images
         std::vector<matrix<rgb_pixel>> fing_print_images;
         for (auto img_path : subdir.get_files()){
-            //std::cout<<"Image path: "<<img_path<<std::endl;
             dlib::matrix<rgb_pixel> img;
             dlib::load_image(img, img_path);
-            fing_print_images.push_back(img);
+
+	    //Detecting faces in loaded image
+	    for (auto face : detector(img)){
+		auto shape = sp(img, face);
+		matrix<rgb_pixel> face_chip;
+		extract_image_chip(img, get_face_chip_details(shape,150,0.25), face_chip);
+		faces.push_back(std::move(face_chip));
+	    }
+
+	    if (faces.size() > 1){
+		std::cout << "More than 1 face found. " << std::endl;
+            }
+
+            fing_print_images.push_back(faces[0]);
+	    faces.clear();
         }
 
 
@@ -124,7 +146,6 @@ int main(int argc, char** argv) try
         matr mat1;
         for(int i = 0; i< fing_print_images.size(); i++){
             std::vector<float> vec;
-            //matrix<float,0,1> descriptor = mean(mat(net(jitter_image(fing_print_images[i]))));
             for(int j = 0; j< 128 ; j++){
                 vec.push_back(descriptors[i](0,j));
             }

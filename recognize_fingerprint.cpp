@@ -1,6 +1,7 @@
 #include <dlib/dnn.h>
 #include <dlib/string.h>
 #include <dlib/image_io.h>
+#include <dlib/image_processing/frontal_face_detector.h>
 #include <fstream>
 #include <string>
 #include <cfloat>
@@ -126,23 +127,52 @@ int main(int argc, char** argv) try
 {
     if (argc == 1)
     {
-        std::cout << "Provide a sample test data directory path and the descriptor's to this program as cmd line input " << std::endl;
+        std::cout << "Provide a sample test data directory path and the descriptor's to this program as cmd line input.Then give model name and threshold dist." << std::endl;
         return 1;
     }
+
+    
+    //Intializing face detector
+    frontal_face_detector detector = get_frontal_face_detector();
+    // We will also use a face landmarking model to align faces to a standard pose:  (see face_landmark_detection_ex.cpp for an introduction)
+    shape_predictor sp;
+    deserialize("shape_predictor_5_face_landmarks.dat") >> sp;
 
 
     // Initializing the network with previously trained model
     anet_type net;
-    deserialize("metric_network_renset_Dtrans_nium_frozen_pfast2500.dat") >> net;
-
+    auto model_name = argv[3];
+    deserialize(model_name) >> net;
+    
+    auto c_threshold = std::stof(argv[4]);
+    std::vector<matrix<rgb_pixel>> faces;
     for (auto img_path : directory(argv[1]).get_files()){
-        std::cout<<"\nRecognizing image at path => "<<img_path<<" "<<std::endl;
+       // std::cout<<"\nRecognizing image at path => "<<img_path<<" "<<std::endl;
         std::vector<matrix<rgb_pixel>> fing_print_images;
         dlib::matrix<rgb_pixel> img;
         dlib::load_image(img, img_path);
-        fing_print_images.push_back(img);
+	
+	//Detecting faces in loaded image
+      //  std::vector<matrix<rgb_pixel>> faces;
+        for (auto face : detector(img)){
+	    auto shape = sp(img, face);
+	    matrix<rgb_pixel> face_chip;
+	    extract_image_chip(img, get_face_chip_details(shape,150,0.25), face_chip);
+	    faces.push_back(std::move(face_chip));
+        }
+
+        if (faces.size() > 1){
+            std::cout << "More than 1 face found. " << std::endl;
+        }
+
+        fing_print_images.push_back(faces[0]);
+	faces.clear();
 
         matrix<float,0,1> descriptor = net(fing_print_images)[0];
+	/*std::vector<float> descriptor_vec;
+        for(int i = 0; i < 128; i++){
+            descriptor_vec.push_back(descriptor(0,i));
+        }*/
 
         float distance = FLT_MAX;
         std::string person_name = "";
@@ -160,13 +190,14 @@ int main(int argc, char** argv) try
 		}
 
                 float new_dist = length(descriptor-saved_descriptor);
-                if(distance > new_dist){
+		if(distance > new_dist){
                      distance = new_dist;
                      person_name = getFileName(descr_path);
                 }
             }
         }
-        std::cout << "Distance: "<<distance<<", Person Name: "<<(distance < 0.6? person_name: "Unknown")<<std::endl;
+        std::cout << img_path << ","<<distance<<","<<(distance < c_threshold ? person_name: "Unknown")<<std::endl;
+	//std::cout << "Distance: "<<distance<<", Person Name: "<<(distance <= c_threshold? person_name: "Unknown")<<std::endl;
     }
 }
 catch (std::exception& e)
